@@ -2,9 +2,7 @@
 
 Terraform for my personal Azure subscription.
 
-## Projects
-
-### winlab
+## winlab
 
 - Purpose: Stand up a small Windows lab to test DHCP and DNS on Windows Server 2025 for a course.
 - Files:
