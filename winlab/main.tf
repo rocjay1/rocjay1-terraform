@@ -15,12 +15,17 @@ terraform {
 
 provider "azurerm" {
   subscription_id = "a3c119ba-8f5f-466d-a19c-47f6445cfdb9"
-  
+
   features {}
 }
 
 locals {
   location = "eastus"
+
+  tags = {
+    Project      = "winlab"
+    DeployMethod = "Terraform"
+  }
 
   // VM inventory: key = name, value indicates if public IP is needed
   vms = {
@@ -51,6 +56,7 @@ resource "random_password" "admin" {
 resource "azurerm_resource_group" "rg" {
   name     = "rg-winlab-${random_string.suffix.result}"
   location = local.location
+  tags     = local.tags
 }
 
 resource "azurerm_virtual_network" "vnet" {
@@ -58,6 +64,7 @@ resource "azurerm_virtual_network" "vnet" {
   address_space       = ["10.10.0.0/16"]
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
+  tags                = local.tags
 }
 
 resource "azurerm_subnet" "subnet" {
@@ -83,6 +90,8 @@ resource "azurerm_network_security_group" "jumpbox" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
+
+  tags = local.tags
 }
 
 resource "azurerm_public_ip" "pip" {
@@ -92,6 +101,7 @@ resource "azurerm_public_ip" "pip" {
   resource_group_name = azurerm_resource_group.rg.name
   allocation_method   = "Dynamic"
   sku                 = "Basic"
+  tags                = local.tags
 }
 
 resource "azurerm_network_interface" "nic" {
@@ -106,6 +116,8 @@ resource "azurerm_network_interface" "nic" {
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = contains(keys(azurerm_public_ip.pip), each.key) ? azurerm_public_ip.pip[each.key].id : null
   }
+
+  tags = local.tags
 }
 
 // Apply NSG only to the client NIC (the only one with a public IP)
@@ -141,6 +153,8 @@ resource "azurerm_windows_virtual_machine" "vm" {
   }
 
   computer_name = each.key
+
+  tags = local.tags
 }
 
 output "admin_credentials" {
