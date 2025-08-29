@@ -5,4 +5,3 @@ output "admin_credentials" {
   }
   sensitive = true
 }
-

@@ -1,4 +1,3 @@
-# // Windows Server VMs (Standard_B2ms)
 # locals {
 #   server_names = [
 #     "DC01",
